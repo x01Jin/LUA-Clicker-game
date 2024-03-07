@@ -43,7 +43,8 @@ function love.draw()
     elseif gameState == "gameover" then
         love.graphics.setColor(255, 255, 255)
         love.graphics.printf("Game Over", 0, love.graphics.getHeight() / 2 - 20, love.graphics.getWidth(), "center")
-        love.graphics.printf("Click anywhere to Restart", 0, love.graphics.getHeight() / 2 + 20, love.graphics.getWidth(), "center")
+        love.graphics.printf("Your Score: " .. score, 0, love.graphics.getHeight() / 2, love.graphics.getWidth(), "center")
+        love.graphics.printf("Click anywhere to Restart", 0, love.graphics.getHeight() / 2 + 40, love.graphics.getWidth(), "center")
     end
 end
 
@@ -52,8 +53,9 @@ function love.mousepressed(x, y, button, istouch, presses)
         gameState = "play"
     elseif gameState == "play" then
         if not gameOver then
-            local distance = math.sqrt((x - circleX)^2 + (y - circleY)^2)
-            if distance <= circleRadius then
+            local distanceToCircle = math.sqrt((x - circleX)^2 + (y - circleY)^2)
+            local distanceToObstacle = math.sqrt((x - obstacleX)^2 + (y - obstacleY)^2)
+            if distanceToCircle <= circleRadius then
                 score = score + 1
                 circleX, circleY = love.getRandomPosition(circleRadius, obstacleX, obstacleY, obstacleRadius)
                 clickCount = clickCount + 1
@@ -62,6 +64,9 @@ function love.mousepressed(x, y, button, istouch, presses)
                     clickCount = 0
                 end
                 obstacleX, obstacleY = love.getRandomPosition(obstacleRadius, circleX, circleY, circleRadius)
+            elseif distanceToObstacle <= obstacleRadius then
+                gameOver = true
+                gameState = "gameover"
             end
         end
     elseif gameState == "gameover" and button == 1 then
