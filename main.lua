@@ -5,7 +5,7 @@ local gameOver = false
 local timer = 10
 local clickCount = 0
 local threshold = 15
-local gameState = "start"  -- New variable to manage game states ("start", "play", "gameover")
+local gameState = "start"
 
 function love.load()
     love.graphics.setBackgroundColor(0, 0, 0)
@@ -55,25 +55,13 @@ function love.mousepressed(x, y, button, istouch, presses)
             local distance = math.sqrt((x - circleX)^2 + (y - circleY)^2)
             if distance <= circleRadius then
                 score = score + 1
-                circleX = love.math.random(circleRadius, love.graphics.getWidth() - circleRadius)
-                circleY = love.math.random(circleRadius, love.graphics.getHeight() - circleRadius)
-                
+                circleX, circleY = love.getRandomPosition(circleRadius, obstacleX, obstacleY, obstacleRadius)
                 clickCount = clickCount + 1
-                
                 if clickCount >= threshold then
                     timer = 10
                     clickCount = 0
                 end
-                            
-                obstacleX = love.math.random(obstacleRadius, love.graphics.getWidth() - obstacleRadius)
-                obstacleY = love.math.random(obstacleRadius, love.graphics.getHeight() - obstacleRadius)
-
-            end
-
-            local obstacleDistance = math.sqrt((x - obstacleX)^2 + (y - obstacleY)^2)
-            if obstacleDistance <= obstacleRadius then
-                gameOver = true
-                gameState = "gameover"
+                obstacleX, obstacleY = love.getRandomPosition(obstacleRadius, circleX, circleY, circleRadius)
             end
         end
     elseif gameState == "gameover" and button == 1 then
@@ -85,4 +73,20 @@ function love.mousepressed(x, y, button, istouch, presses)
         gameOver = false
         gameState = "start"
     end
+end
+
+function love.getRandomPosition(radius, avoidX, avoidY, avoidRadius)
+    local x, y
+    repeat
+        x = love.math.random(radius, love.graphics.getWidth() - radius)
+        y = love.math.random(radius, love.graphics.getHeight() - radius)
+    until not love.isCollision(x, y, radius, avoidX, avoidY, avoidRadius)
+    return x, y
+end
+
+function love.isCollision(x1, y1, r1, x2, y2, r2)
+    local dx = x2 - x1
+    local dy = y2 - y1
+    local distance = math.sqrt(dx * dx + dy * dy)
+    return distance < r1 + r2
 end
